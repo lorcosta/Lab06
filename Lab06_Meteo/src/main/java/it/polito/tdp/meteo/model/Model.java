@@ -1,5 +1,6 @@
 package it.polito.tdp.meteo.model;
 
+import java.util.ArrayList;
 import java.util.List;
 import it.polito.tdp.meteo.DAO.MeteoDAO;
 
@@ -39,8 +40,19 @@ public class Model {
 	}
 	
 	// of course you can change the String output with what you think works best
-	public String trovaSequenza(int mese) {
-		return "TODO!";
+	public List<String> trovaSequenza(int mese) {
+		List<String> soluzione= new ArrayList<String>();
+		List<String> citta= new ArrayList<String>();
+		citta.add("Genova");citta.add("Milano");citta.add("Torino");
+		
+		cerca(citta,0,0);
+		
+		
+		return soluzione;
+	}
+	
+	private void cerca(List<String> citta, Integer livello, Integer giorno) {
+		//TODO implementare ricorsione completa
 	}
 }
 /*
@@ -53,10 +65,24 @@ public class Model {
  * Come faccio a riconoscere se una soluzione parziale è anche completa? 
  * Una soluzione parziale è anche completa se sono alla terza città considerata
  * 
- * Data 
+ * Data una soluzione parziale come faccio a sapere se è valida o non è valida?
+ * Una soluzione parziale è valida se rimango nelle città che ho visitato almeno 3 e non 
+ * più di 6 giorni
  * 
+ * Data una soluzione completa come faccio a sapere se è valida o meno?
+ * Una soluzione completa è valida se il costo è minimo, se nelle città rimango meno 
+ * di 6 e almeno 3 giorni e se ho visitato tutte le città
  * 
+ * Come si genera una soluzione di livello+1 trovandomi io al livello 'livello'?
+ * Una soluzione di livello+1 è data dalla scelta di una città e di un giorno, questo giorno 
+ * viene scelto sulla base dell'umidità minima nei prossimi 9 (3 giorni nella città attuale+
+ * 6 giorni nella prossima città) giorni a partire dal terzo giorno nel quale mi trovo in una città 
  * 
+ * Qual è la struttura dati per memorizzare una soluzione?
+ * Voglio memorizzare città-giorno-umidità perciò li scrivo in una stringa (per una soluzione parziale)
+ * che aggiungerò dentro una lista che conterrà le tre stringhe relative alle tre città
  * 
+ * Qual è la struttura dati per memorizzare lo stato della ricerca?
+ * Linked list per le temperature
  * */
  
