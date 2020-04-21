@@ -42,6 +42,21 @@ public class Model {
 	public String trovaSequenza(int mese) {
 		return "TODO!";
 	}
-	
-
 }
+/*
+ * Cosa rappresenta il livello?
+ * Il livello rappresenta la città nella quale mi trovo
+ * 
+ * Come è formata una soluzione parziale?
+ * Una soluzione parziale è composta da una città scelta in un giorno scelto
+ * 
+ * Come faccio a riconoscere se una soluzione parziale è anche completa? 
+ * Una soluzione parziale è anche completa se sono alla terza città considerata
+ * 
+ * Data 
+ * 
+ * 
+ * 
+ * 
+ * */
+ 
