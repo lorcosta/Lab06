@@ -40,7 +40,7 @@ public class MeteoDAO {
 	}
 
 	public List<Rilevamento> getAllRilevamentiLocalitaMese(int mese, String localita) {
-
+		
 		return null;
 	}
 
