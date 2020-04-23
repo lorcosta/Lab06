@@ -1,5 +1,8 @@
 package it.polito.tdp.meteo.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class TestModel {
 
 	public static void main(String[] args) {
@@ -8,12 +11,11 @@ public class TestModel {
 		
 		System.out.println(m.getUmiditaMedia(12));
 		
-		//System.out.println(m.trovaSequenza(5));
+		System.out.println(m.trovaSequenza(5));
 
-		for(Rilevamento r:m.getAllRilevamentiLocalitaMese(1,"Genova")) {
-			System.out.println(r.toString());
-		}
-
+		//for(Rilevamento r:m.getAllRilevamentiLocalitaMese(1,"Genova")) {
+		//	System.out.println(r.toString());
+		//}
 	}
 
 }

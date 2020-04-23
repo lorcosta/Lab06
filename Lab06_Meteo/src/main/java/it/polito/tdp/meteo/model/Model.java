@@ -12,7 +12,8 @@ public class Model {
 	private final static int NUMERO_GIORNI_TOTALI = 15;
 	private MeteoDAO meteo=new MeteoDAO();
 	Integer bestCosto=100000000,costo=0;
-	List<String> soluzione= new ArrayList<String>();
+	List<Citta> citta= new ArrayList<Citta>();
+	List<List<Citta>> soluzione= new ArrayList<List<Citta>>();//soluzione contiene varie combinazioni di citta
 	
 
 	public Model() {
@@ -44,47 +45,80 @@ public class Model {
 	public List<Rilevamento> getAllRilevamentiLocalitaMese(int mese,String localita){
 		return meteo.getAllRilevamentiLocalitaMese(mese, localita);
 	}
-	
+	/**
+	 * Genera tutte le sequenze di città 
+	 * @param mese
+	 * @return lista ordinata delle città da visitare
+	 */
 	// of course you can change the String output with what you think works best
-	public List<String> trovaSequenza(int mese) {
-		List<Citta> citta= new ArrayList<Citta>();
+	public List<List<Citta>> trovaSequenza(int mese) {
+		List<Citta> parziale= new ArrayList<Citta>();
 		citta.add(new Citta("Torino",this.getAllRilevamentiLocalitaMese(mese, "Torino")));
 		citta.add(new Citta("Genova",this.getAllRilevamentiLocalitaMese(mese, "Genova")));
 		citta.add(new Citta("Milano",this.getAllRilevamentiLocalitaMese(mese, "Milano")));
 		
-		cerca(citta,0,0);
+		cerca(parziale,0,0);
 		
 		return soluzione;
 	}
 	
-	private void cerca(List<Citta> citta, Integer livello, Integer giorno) {
+	private void cerca(List<Citta> parziale, Integer livello, Integer giorno) {
 		//TODO implementare ricorsione completa
+		
 		if(livello==15) {
-			//this.soluzione.add(c);
+			//Sono all'ultimo livello e dovrei aver trovato una soluzione
+			System.out.println(parziale);
+			this.soluzione.add(parziale);
+			if(costo<bestCosto) bestCosto=costo;
 			return;
 		}
+		//caso generale, provare ad aggiungere a 'parziale' tutte le città presenti
 		for(Citta c:citta) {
+			//provo a mettere c nella posizione 'livello' della soluzione parziale
+			parziale.add(c);
+			//condizioni di filtro--> decido cosa fare in base allo stato in cui si trova parziale
 			if(giorno<=3) {
-				citta.clear();
-				citta.add(c);
-				costo+=c.getRilevamenti().get(livello).getUmidita();
-				cerca(citta,livello+1,giorno+1);
-			}else if(giorno<=6 && giorno>3) {
-				//A questo livello non so se sto cambiando o meno città
-				costo+=c.getRilevamenti().get(livello).getUmidita();
-				cerca(citta,livello+1,giorno+1);
+				//I giorni in cui sono in questa città sono meno di tre perciò devo continuare a rimanere qui
+			}else if (giorno>3 && giorno<=6) {
+				//I giorni sono compresi fra 3 e 6, devo decidere dove andare in base al costo minore
 			}else {
-				citta.remove(c);
-				giorno=0;
-				costo+=100;
-				cerca(citta,livello+1,giorno+1);
+				//I giorni sono più di 6 perciò azzero il contatore e cambio la città
 			}
+			cerca(parziale,livello+1,giorno+1);
+			//backtracking, rimuovo ultimo risultato appena aggiunto
+			parziale.remove(parziale.size()-1);
 			
 		}
 		
 	}
+
+	private Citta cercaCostoMinore(Integer livello) {
+		Integer confronto=101;
+		Citta daRitornare = null;
+		for(Citta c:citta) {
+			if(c.getRilevamenti().get(livello+1).getUmidita()<confronto) {
+				confronto=c.getRilevamenti().get(livello+1).getUmidita();
+				daRitornare=c;
+			}
+		}
+		return daRitornare;
+	}
 }
 /*
+ * Dato di partenza:un insieme di città da dividere nei 15 giorni
+ * Soluzione parziale:una parte della sequenza delle città nei giorni già decisa
+ * Livello: numero di giorni di cui è composta la soluzione parziale, numero di giorni 
+ * 			per i quali ho già deciso in che città andare
+ * Soluzione finale:soluzione di lunghezza 15, caso terminale
+ * Caso terminale: salvare la soluzione trovata
+ * Generazione delle nuove soluzioni:provare a aggiungere una città scegliendola tra-->
+ * Se sono in una città da più di 6 giorni scegliere tra le città in cui non mi trovo al momento
+ * Se sono in una città da meno di 3 giorni scegliere la città in cui sono per i restanti giorni
+ * Se sono in una città da più di 3 e meno di 6 giorni scegliere quella che mi genera il costo minore
+ * 
+ * se c!=c-1 allora vado direttamente a livello+3 e giorno+3
+ * se c==c-1 allora vado a livello+1 e giorno+1 con qualsiasi città fino a che giorno<6
+ * 
  * Per ogni giorno, quindi per ogni livello, devo provare ad andare in ogni citta tenendo conto del fatto che
  * non posso cambiare città per 3 giorni perciò ogni volta che cambio città vado direttamente dal livello x al 
  * livello x+3 ovviamente tenendo conto delle umidità dei tre giorni che "salto". Se non cambio città devo 
@@ -93,18 +127,20 @@ public class Model {
  * 
  * 
  * Cosa rappresenta il livello?
- * Il livello rappresenta il giorno tra i 15 per il quale sto decidendo in quale città andare
+ * Il livello rappresenta il giorno tra i 15 per il quale sto decidendo in quale città andare,
+ * mi dice in quale giorno sono e per questo giorno che considero devo decidere la città
  * 
  * Come è formata una soluzione parziale?
- * Una soluzione parziale è composta da un insieme di giorno-citta, dove viene indicato in quale citta
- * mi trovo in un determinato giorno
+ * Una soluzione parziale è una parte di soluzione ovvero è una parte di lista di città
+ * E' un insieme di città dove ho già deciso che andrò
  * 
  * Come faccio a riconoscere se una soluzione parziale è anche completa? 
- * Una soluzione parziale è anche completa se ho scelto la città nella quale devo andare
+ * Una soluzione parziale è anche completa se ho scelto la città nella quale devo andare per 
+ * tutti e 15 i giorni
  * 
  * Data una soluzione parziale come faccio a sapere se è valida o non è valida?
  * Una soluzione parziale è valida se rimango nelle città che ho visitato almeno 3 e non 
- * più di 6 giorni
+ * più di 6 giorni e ho visitato tutte le città
  * 
  * Data una soluzione completa come faccio a sapere se è valida o meno?
  * Una soluzione completa è valida se il costo è minimo, se nelle città rimango meno 
