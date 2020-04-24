@@ -81,14 +81,12 @@ public class Model {
 			//condizioni di filtro--> decido cosa fare in base allo stato in cui si trova parziale
 			//scegleire tra filtro sul giorno o filtro sulla citta precedente
 			// se c!=c-1 allora vado direttamente a livello+3 e giorno+3
-			if(!parziale.get(livello-1).equals(c) && giorno<3) {
+			if(livello!=0 && !parziale.get(livello-1).equals(c) && giorno<3) {
 				cerca(parziale,livello+3,giorno+3);
 			}
 			// se c==c-1 allora vado a livello+1 e giorno+1 con qualsiasi città fino a che giorno<6
 			else if (livello!=0 && parziale.get(livello-1).equals(c) && giorno>3 && giorno<=6) {
 				//I giorni sono compresi fra 3 e 6, devo decidere dove andare in base al costo minore
-				citta.clear();
-				citta.add(this.cercaCostoMinore(livello));
 				cerca(parziale,livello+1,giorno+1);
 			}else {
 				//I giorni sono più di 6 perciò azzero il contatore e cambio la città
@@ -102,7 +100,7 @@ public class Model {
 		
 	}
 
-	private Citta cercaCostoMinore(Integer livello) {
+	/*private Citta cercaCostoMinore(Integer livello) {
 		Integer confronto=101;
 		Citta daRitornare = null;
 		for(Citta c:citta) {
@@ -112,7 +110,7 @@ public class Model {
 			}
 		}
 		return daRitornare;
-	}
+	}*/
 }
 /*
  * Dato di partenza:un insieme di città da dividere nei 15 giorni
