@@ -11,7 +11,7 @@ public class Model {
 	private final static int NUMERO_GIORNI_CITTA_MAX = 6;
 	private final static int NUMERO_GIORNI_TOTALI = 15;
 	private MeteoDAO meteo=new MeteoDAO();
-	Integer bestCosto=100000000,costo=0;
+	private Integer bestCosto=Integer.MAX_VALUE,costo=0;
 	List<Citta> citta= new ArrayList<Citta>();
 	List<List<Citta>> soluzione= new ArrayList<List<Citta>>();//soluzione contiene varie combinazioni di citta
 	
@@ -67,9 +67,11 @@ public class Model {
 		
 		if(livello==15) {
 			//Sono all'ultimo livello e dovrei aver trovato una soluzione
-			System.out.println(parziale);
-			this.soluzione.add(parziale);
-			if(costo<bestCosto) bestCosto=costo;
+			if(costo<bestCosto) {
+				bestCosto=costo;
+				this.soluzione.add(parziale);
+				System.out.println(parziale+" "+bestCosto);
+			}
 			return;
 		}
 		//caso generale, provare ad aggiungere a 'parziale' tutte le città presenti
@@ -77,17 +79,25 @@ public class Model {
 			//provo a mettere c nella posizione 'livello' della soluzione parziale
 			parziale.add(c);
 			//condizioni di filtro--> decido cosa fare in base allo stato in cui si trova parziale
-			if(giorno<=3) {
-				//I giorni in cui sono in questa città sono meno di tre perciò devo continuare a rimanere qui
-			}else if (giorno>3 && giorno<=6) {
+			//scegleire tra filtro sul giorno o filtro sulla citta precedente
+			// se c!=c-1 allora vado direttamente a livello+3 e giorno+3
+			if(!parziale.get(livello-1).equals(c) && giorno<3) {
+				cerca(parziale,livello+3,giorno+3);
+			}
+			// se c==c-1 allora vado a livello+1 e giorno+1 con qualsiasi città fino a che giorno<6
+			else if (livello!=0 && parziale.get(livello-1).equals(c) && giorno>3 && giorno<=6) {
 				//I giorni sono compresi fra 3 e 6, devo decidere dove andare in base al costo minore
+				citta.clear();
+				citta.add(this.cercaCostoMinore(livello));
+				cerca(parziale,livello+1,giorno+1);
 			}else {
 				//I giorni sono più di 6 perciò azzero il contatore e cambio la città
+				giorno=0;
+				cerca(parziale,livello+1,giorno+1);
 			}
-			cerca(parziale,livello+1,giorno+1);
-			//backtracking, rimuovo ultimo risultato appena aggiunto
-			parziale.remove(parziale.size()-1);
 			
+			//backtracking, rimuovo ultimo risultato appena aggiunto
+			parziale.remove(parziale.size()-1);	
 		}
 		
 	}
