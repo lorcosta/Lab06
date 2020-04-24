@@ -81,19 +81,11 @@ public class Model {
 			//condizioni di filtro--> decido cosa fare in base allo stato in cui si trova parziale
 			//scegleire tra filtro sul giorno o filtro sulla citta precedente
 			// se c!=c-1 allora vado direttamente a livello+3 e giorno+3
-			if(livello!=0 && !parziale.get(livello-1).equals(c) && giorno<3) {
-				cerca(parziale,livello+3,giorno+3);
-			}
-			// se c==c-1 allora vado a livello+1 e giorno+1 con qualsiasi città fino a che giorno<6
-			else if (livello!=0 && parziale.get(livello-1).equals(c) && giorno>3 && giorno<=6) {
-				//I giorni sono compresi fra 3 e 6, devo decidere dove andare in base al costo minore
-				cerca(parziale,livello+1,giorno+1);
-			}else {
-				//I giorni sono più di 6 perciò azzero il contatore e cambio la città
-				giorno=0;
-				cerca(parziale,livello+1,giorno+1);
-			}
-			
+			//if(la città c è valida tenendo conto delle città ad essa precedenti in parziale)
+			//TODO scrivi un metodo che controlli le città precedenti cioè in base al livello al 
+			//quale mi trovo (livello==0 non posso andare indietro, livello==1 guardo solo 1 citta)
+			//valuto da quanti giorni sono in una città e faccio scelte
+			cerca(parziale,livello+1,giorno+1);
 			//backtracking, rimuovo ultimo risultato appena aggiunto
 			parziale.remove(parziale.size()-1);	
 		}
