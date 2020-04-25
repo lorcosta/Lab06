@@ -11,9 +11,9 @@ public class Model {
 	private final static int NUMERO_GIORNI_CITTA_MAX = 6;
 	private final static int NUMERO_GIORNI_TOTALI = 15;
 	private MeteoDAO meteo=new MeteoDAO();
-	private Integer bestCosto=Integer.MAX_VALUE,costo=0;
+	private Double bestCosto=Double.MAX_VALUE;
 	List<Citta> citta= new ArrayList<Citta>();
-	List<List<Citta>> soluzione= new ArrayList<List<Citta>>();//soluzione contiene varie combinazioni di citta
+	List<Citta> soluzione;//soluzione contiene la migliore parziale possibile
 	
 
 	public Model() {
@@ -51,58 +51,111 @@ public class Model {
 	 * @return lista ordinata delle città da visitare
 	 */
 	// of course you can change the String output with what you think works best
-	public List<List<Citta>> trovaSequenza(int mese) {
+	public String trovaSequenza(int mese) {
 		List<Citta> parziale= new ArrayList<Citta>();
 		citta.add(new Citta("Torino",this.getAllRilevamentiLocalitaMese(mese, "Torino")));
 		citta.add(new Citta("Genova",this.getAllRilevamentiLocalitaMese(mese, "Genova")));
 		citta.add(new Citta("Milano",this.getAllRilevamentiLocalitaMese(mese, "Milano")));
 		
-		cerca(parziale,0,0);
-		
-		return soluzione;
+		cerca(parziale,0);
+		String ritorno="";
+		for(int i=0;i<this.NUMERO_GIORNI_TOTALI;i++) {
+			ritorno+=soluzione.get(i).getRilevamenti().get(i).getData()+" "+soluzione.get(i).getNome()+" "+soluzione.get(i).getRilevamenti().get(i)+" "+"\n";
+		}
+		ritorno+="Costo totale: "+bestCosto;
+		return ritorno;
 	}
 	
-	private void cerca(List<Citta> parziale, Integer livello, Integer giorno) {
+	private void cerca(List<Citta> parziale, Integer livello) {
 		//TODO implementare ricorsione completa
 		
-		if(livello==15) {
+		if(livello==this.NUMERO_GIORNI_TOTALI) {
 			//Sono all'ultimo livello e dovrei aver trovato una soluzione
+			Double costo=calcolaCosto(parziale);
 			if(costo<bestCosto) {
 				bestCosto=costo;
-				this.soluzione.add(parziale);
-				System.out.println(parziale+" "+bestCosto);
+				this.soluzione= new ArrayList<Citta>(parziale);
+				System.out.println(soluzione+" "+bestCosto);
 			}
 			return;
 		}
 		//caso generale, provare ad aggiungere a 'parziale' tutte le città presenti
 		for(Citta c:citta) {
-			//provo a mettere c nella posizione 'livello' della soluzione parziale
-			parziale.add(c);
 			//condizioni di filtro--> decido cosa fare in base allo stato in cui si trova parziale
-			//scegleire tra filtro sul giorno o filtro sulla citta precedente
-			// se c!=c-1 allora vado direttamente a livello+3 e giorno+3
 			//if(la città c è valida tenendo conto delle città ad essa precedenti in parziale)
-			//TODO scrivi un metodo che controlli le città precedenti cioè in base al livello al 
-			//quale mi trovo (livello==0 non posso andare indietro, livello==1 guardo solo 1 citta)
-			//valuto da quanti giorni sono in una città e faccio scelte
-			cerca(parziale,livello+1,giorno+1);
-			//backtracking, rimuovo ultimo risultato appena aggiunto
-			parziale.remove(parziale.size()-1);	
+			if(this.isCittaValida(c, parziale)) {
+				//provo a mettere c nella posizione 'livello' della soluzione parziale
+				parziale.add(c);
+				cerca(parziale,livello+1);
+				parziale.remove(parziale.size()-1);
+				//backtracking, rimuovo ultimo risultato appena aggiunto
+			}
 		}
 		
 	}
-
-	/*private Citta cercaCostoMinore(Integer livello) {
-		Integer confronto=101;
-		Citta daRitornare = null;
-		for(Citta c:citta) {
-			if(c.getRilevamenti().get(livello+1).getUmidita()<confronto) {
-				confronto=c.getRilevamenti().get(livello+1).getUmidita();
-				daRitornare=c;
+	/**
+	 * Definisce se la città che voglio inserire nella soluzione parziale è valida o meno
+	 * @param c la città per cui verificare la validità
+	 * @param parziale la soluzione parziale alla quale voglio aggiungere c
+	 * @return {@code true} se la citta può essere inserita, {@code false} altrimenti
+	 */
+	private boolean isCittaValida(Citta c, List<Citta> parziale) {
+		//Una citta è valida se le precedenti sono uguali alla stessa e minori di 6
+		//infatti una citta non può apparire per più di 6 volte nella sequenza
+		Integer conta=0;
+		for(Citta daContare:parziale) {
+			if(daContare.equals(c))
+				conta++;
+		}
+		if(conta>=this.NUMERO_GIORNI_CITTA_MAX) return false;//ritorno false perchè la citta è già apparsa il numero massimo di volte nella sequenza
+		if(parziale.size()==0) {
+			//non è stata inserita ancora alcuna citta perciò la città che voglio inserire è di sicuro valida
+			return true;
+		}
+		if(parziale.size()==1 || parziale.size()==2) {
+			return c.equals(parziale.get(parziale.size()-1));
+		}//se mi trovo al secondo o al terzo giorno ritorno true solo se la città c che voglio inserire è la stessa del primo giorno
+		/*
+		int i=parziale.size(),consecutivi=0;//conta i giorni consecutivi in cui una città è uguale a quella che voglio inserire
+		//Il while parte dalla fine di parziale e va a ritroso a guardare quante volte appare la città che voglio inserire
+		while(c.equals(parziale.get(i)) && i>=0) {
+			consecutivi++;
+			i--;
+		}
+		if(consecutivi<3 && c.equals(parziale.get(parziale.size()-1))) return true;
+		else if( consecutivi>=3 && consecutivi<6) return true;
+		else if(consecutivi>6) return false;
+		Questo modo non funziona perchè io pensavo soltanto a sequenze dove le città apparivano "in blocco"
+		ma potenzialmente una sequenza potrebbe essere T-T-T-M-M-M-G-G-G-T-T-T-M-M-M e nel secondo inserimento di 
+		Torino devo accorgermi che torino è già stata inserita e non potrò inserirla altre 6 volte ma solo 3*/
+		//sono più avanti del livello 3 e sono sicuro di non aver inserito la città più di 6 volte perciò se 
+		//la città da inserire è la stessa in cui già sono presente posso rimanere accertandomi che la città precedente sia la stessa che voglio inserire
+		if(c.equals(parziale.get(parziale.size()-1)))
+			return true;
+		//se invece la città che voglio inserire è differente da quella in cui sono stato in precedenza, mi devo 
+		//assicurare di essere stato almeno tre giorni nella scorsa città frequentata
+		if(parziale.get(parziale.size()-1).equals(parziale.get(parziale.size()-2)) && 
+				parziale.get(parziale.size()-2).equals(parziale.get(parziale.size()-3)))
+			return true;//nella scorsa città ci sono rimasto tre giorni e posso cambiarla
+		return false;
+	}
+	/**
+	 * Calcola il costo di una soluzione parziale completa
+	 * @param parziale una soluzione parziale completa fino all'ultimo livello
+	 * @return costo il costo della soluzione passata come parametro
+	 */
+	private double calcolaCosto(List<Citta> parziale) {
+		double costo=0.0;
+		for(int i=2;i<=this.NUMERO_GIORNI_TOTALI;i++) {
+			if(!parziale.get(i-1).equals(parziale.get(i-2))) {
+				costo+=this.COST;
 			}
 		}
-		return daRitornare;
-	}*/
+		for(int i=0;i<this.NUMERO_GIORNI_TOTALI;i++) {
+			costo+=parziale.get(i).getRilevamenti().get(i).getUmidita();
+		}
+		return costo;
+	}
 }
 /*
  * Dato di partenza:un insieme di città da dividere nei 15 giorni
