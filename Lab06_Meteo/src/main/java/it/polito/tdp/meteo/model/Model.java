@@ -17,7 +17,6 @@ public class Model {
 	
 
 	public Model() {
-
 	}
 
 	// of course you can change the String output with what you think works best
@@ -53,16 +52,19 @@ public class Model {
 	// of course you can change the String output with what you think works best
 	public String trovaSequenza(int mese) {
 		List<Citta> parziale= new ArrayList<Citta>();
+		citta.clear();
 		citta.add(new Citta("Torino",this.getAllRilevamentiLocalitaMese(mese, "Torino")));
 		citta.add(new Citta("Genova",this.getAllRilevamentiLocalitaMese(mese, "Genova")));
 		citta.add(new Citta("Milano",this.getAllRilevamentiLocalitaMese(mese, "Milano")));
-		
+		this.soluzione=null;
 		cerca(parziale,0);
 		String ritorno="";
-		for(int i=0;i<this.NUMERO_GIORNI_TOTALI;i++) {
-			ritorno+=soluzione.get(i).getRilevamenti().get(i).getData()+" "+soluzione.get(i).getNome()+" "+soluzione.get(i).getRilevamenti().get(i)+" "+"\n";
+		if(soluzione!=null) {
+			for(int i=0;i<this.NUMERO_GIORNI_TOTALI;i++) {
+				ritorno+=soluzione.get(i).getRilevamenti().get(i).getData()+" "+soluzione.get(i).getNome()+" "+soluzione.get(i).getRilevamenti().get(i)+" "+"\n";
+			}
+			ritorno+="Costo totale: "+bestCosto;
 		}
-		ritorno+="Costo totale: "+bestCosto;
 		return ritorno;
 	}
 	
@@ -72,7 +74,7 @@ public class Model {
 		if(livello==this.NUMERO_GIORNI_TOTALI) {
 			//Sono all'ultimo livello e dovrei aver trovato una soluzione
 			Double costo=calcolaCosto(parziale);
-			if(costo<bestCosto) {
+			if(soluzione==null || costo<bestCosto) {
 				bestCosto=costo;
 				this.soluzione= new ArrayList<Citta>(parziale);
 				System.out.println(soluzione+" "+bestCosto);

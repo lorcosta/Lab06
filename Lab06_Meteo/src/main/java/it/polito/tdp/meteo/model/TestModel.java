@@ -11,11 +11,7 @@ public class TestModel {
 		
 		System.out.println(m.getUmiditaMedia(12));
 		
-		System.out.println(m.trovaSequenza(1));
-
-		//for(Rilevamento r:m.getAllRilevamentiLocalitaMese(1,"Genova")) {
-		//	System.out.println(r.toString());
-		//}
+		System.out.println(m.trovaSequenza(2));
 	}
 
 }
